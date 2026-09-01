@@ -16,5 +16,9 @@ Data is always represented as structured containers:
 
 ## 3. Symbolic Dimensions
 Abstract dimensions (such as `s`, `s1`, or `s2`) are used for type checking at compile time[cite: 2]. This allows for the verification of the correctness of operations (such as dimensional consistency in matrix multiplication) without having to execute the program[cite: 2].
+`T` as `type` used for marking of the semicircle.
+
+
+
 
 

@@ -8,17 +8,16 @@ Loops over a matrix dimension or an integer range are defined using the `for` ke
 
 ## 3. Assignment and Operations
 Variables can be assigned or updated using standard operators. Matrix and vector operations (like multiplication) are built-in.
-
 - **Standard assignment**: `variable = expression` (e.g., `v = source`)
-- **In-place addition** (used for accumulating results): `variable += expression` 
+- **Matrix addition** (addition follows the semiring's "+" operator; for bool this is logical OR): `variable + expression`
+Can be used as assigning a value to a variable inside a loop (`variable += expression` equal to `v = v + E`)
 - **Matrix multiplication**: `A * B`
 
-*Example from Reachability:* `v += v * G`
 
 
 ## 4. Built-in Functions
 The language provides native functions for common matrix transformations and operations:
-- `eye(vector)`: Converts a one-dimensional vector into a diagonal matrix.
+- `eye(size)`: Takes a dimension and constructs an identity matrix.
 - `pickAny(matrix)`: Retains only the first non-zero element in each row.
 
 

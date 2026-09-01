@@ -47,7 +47,6 @@ def pickAny(matrix):
 
 def WCC(V, edges):
     matrix = create_adjacency_matrix(V, edges, directed = False)
-
     label = eye(V, dtype=bool, format='csr')
     for i in range(V):
         previous_label = label.copy
