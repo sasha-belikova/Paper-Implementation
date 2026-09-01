@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.sparse import csr_matrix, eye, diags
+from scipy.sparse import csr_matrix, eye
 
 def create_adjacency_matrix(V, edges, directed):
     if not edges:
@@ -50,10 +50,10 @@ def WCC(V, edges):
 
     label = eye(V, dtype=bool, format='csr')
     for i in range(V):
-        prev_label = label
-        new_lable = label + (matrix @ label)
-        label = pickAny(new_lable)
-        if (label != prev_label).nnz == 0:
+        previous_label = label.copy
+        new_label = label + (matrix @ label)
+        label = pickAny(new_label)
+        if (label != previous_label).nnz == 0:
             break
     return label
 
