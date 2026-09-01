@@ -1,80 +1,79 @@
 import numpy as np
-
+from scipy.sparse import csr_matrix, eye, diags
 
 def create_adjacency_matrix(V, edges, directed):
-    matrix = [[0] * V for _ in range(V)]
-    for edge in edges:
-        u, v = edge
-        matrix[u][v] = 1
-        if directed == False:
-            matrix[v][u] = 1 
-    return np.array(matrix)
+    if not edges:
+        return csr_matrix((V, V), dtype=bool)
+    edges_array = np.array(edges)
+    rows = edges_array[:, 0]
+    cols = edges_array[:, 1]
+    data = np.ones(len(edges), dtype=bool)
+    if not directed:
+        rows = np.concatenate([rows, cols])
+        cols = np.concatenate([cols, edges_array[:, 0]])
+        data = np.concatenate([data, data])
+    return csr_matrix((data, (rows, cols)), shape=(V, V), dtype=bool)
 
 
-def find_source(graph):
-    V = len(graph)
-    for node in range(V):
-        incoming = any(graph[i][node] == 1 for i in range(V))
-        outgoing = any(graph[node][i] == 1 for i in range(V))
-        if not incoming and outgoing:
-            source = np.zeros(V)
-            source[node] = 1
-            return np.array(source)
-        
+def reach(source_node, matrix):
+    v = csr_matrix(source_node, dtype=bool)
+    V = matrix.shape[0]
+    for i in range(V):
+        prev_none_zero = v.nnz
+        v = v + (v @ matrix)
+        if v.nnz == prev_none_zero:
+            break
+    return v
 
-def multiply(a, b):
-    return np.dot(a, b)
-
-
-def add(a, b):
-    return a + b
-        
-def reach(node, graph):
-    current = node
-    reachable = node.copy()
-
-    for i in range(graph.shape[0]):
-        current = multiply(current, graph)
-        reachable = add(reachable, current)
-    reachable = (reachable > 0).astype(int)
-    return reachable
 
 def pickAny(matrix):
-    for i, row in enumerate(matrix):
-        indices = np.nonzero(row)[0]
-        if len(indices) > 1:
-            matrix[i, indices[1:]] = 0
-    matrix = (matrix > 0).astype(int)
-    return matrix
+    V = matrix.shape[0]
+    matrix = matrix.tocsr()
+    matrix.sum_duplicates()
+    new_data = []
+    new_indices = []
+    new_indptr = [0]
+    for i in range(V):
+        start = matrix.indptr[i]
+        end = matrix.indptr[i+1]
+        if start < end:
+            new_indices.append(matrix.indices[start])
+            new_data.append(True)
+            new_indptr.append(new_indptr[-1] + 1)
+        else:
+            new_indptr.append(new_indptr[-1])      
+    return csr_matrix((new_data, new_indices, new_indptr), shape=matrix.shape, dtype=bool)
 
 
 def WCC(V, edges):
-    directed = False
-    matrix = create_adjacency_matrix(V, edges, directed)
-    vektor = np.ones(V)
-    diag_matrix = np.diag(vektor)
-    for i in range(matrix.shape[0]):
-        temp = add(diag_matrix, multiply(matrix, diag_matrix))
-        diag_matrix = pickAny(temp)
-    return diag_matrix
+    matrix = create_adjacency_matrix(V, edges, directed = False)
 
-
-def SCC(V, edges, directed):
-    matrix = create_adjacency_matrix(V, edges, directed)
-    scc_matrix = np.zeros((V, V))
-    reachable_matrix = np.zeros((V, V))
-
+    label = eye(V, dtype=bool, format='csr')
     for i in range(V):
-        node = np.zeros(V)
-        node[i] = 1
+        prev_label = label
+        new_lable = label + (matrix @ label)
+        label = pickAny(new_lable)
+        if (label != prev_label).nnz == 0:
+            break
+    return label
+
+
+def SCC(V, edges):
+    matrix = create_adjacency_matrix(V, edges, directed = True)
+    rows = []
+    cols = []
+    data = []
+    for i in range(V):
+        node = np.zeros((1, V), dtype = bool)
+        node[0, i] = True
         reachable = reach(node, matrix)
-        reachable_matrix[i] = reachable
-
-    for i in range(V):
-        for j in range(V):
-            if reachable_matrix[i][j] == 1 and reachable_matrix[j][i] == 1:
-                scc_matrix[i][j] = 1
-
+        coordinate = reachable.tocoo()
+        for j in coordinate.col:
+            rows.append(i)
+            cols.append(j)
+            data.append(True)
+    R = csr_matrix((data, (rows, cols)), shape=(V, V), dtype=bool)
+    scc_matrix = R.multiply(R.transpose())
     return scc_matrix
 
 
