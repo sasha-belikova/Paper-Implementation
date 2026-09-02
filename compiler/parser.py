@@ -1,44 +1,7 @@
-from lark import Lark, Transformer, Tree, Token
-
-grammar = """
-start: func_decl
-
-func_decl: "func" IDENTIFIER "(" params ")" "->" type "{" statement* return_stmt "}"
-
-statement: (assignment | addition_assignment | for_stmt) ";"?
-for_stmt: "for" IDENTIFIER "in" IDENTIFIER "." ("nrows"| "ncols") "{" statement* "}"
-return_stmt: "return" expression ";"
-
-expression: addition
-
-addition: multiplication ("+" multiplication)*
-multiplication: postfix ("*" postfix)*
-postfix: atom (method_call | transpose)*
-method_call: ".multiply" "(" expression ")"
-transpose: ".T"
-
-atom: NUMBER | IDENTIFIER | func_call_1arg | func_call_2arg
-assignment: IDENTIFIER "=" expression
-addition_assignment: IDENTIFIER "+=" expression
-
-param: IDENTIFIER ":" type
-params: [param ("," param)*]
-
-type: matrix_type | vector_type | int_type
-matrix_type: "Matrix" "<" IDENTIFIER "," IDENTIFIER "," IDENTIFIER ">"
-vector_type: "Vector" "<" IDENTIFIER "," IDENTIFIER ">"
-int_type: "int"
-
-func_call_1arg: ("eye" | "pickAny" | "WCC" | "SCC") "(" expression ")"
-func_call_2arg: "reach" "(" expression "," expression ")"
-
-NUMBER: /[0-9]+/
-IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
-
-%import common.WS
-%ignore WS
-"""
-
+from lark import Lark, Transformer, Tree
+from .data_types import MatrixType, VectorType, IntType
+from .grammar import grammar
+from .type_checker import TypeChecker
 
 class DesugarAssignment(Transformer):
     def addition_assignment(self, items):
@@ -92,4 +55,43 @@ class DesugarAssignment(Transformer):
     def expression(self, items):
         return items[0]
 
+    def matrix_type(self, items):
+        rows, cols, semiring = items
+        return MatrixType(rows.children[0], cols.children[0], semiring.children[0])
+
+    def vector_type(self, items):
+        size, semiring = items
+        return VectorType(size.children[0], semiring.children[0])
+
+    def int_type(self, items):
+        return IntType()
+    
+    def type(self, items):
+        return items[0]
+
+
+
+parser = Lark(
+    grammar,
+    parser="lalr",
+    start=["start", "expression", "type"]
+)
+
+transformer = DesugarAssignment()
+
+code = """
+func test(A: Matrix<A,B,bool>, n: int)
+-> Vector<B,bool> {
+    return A;
+}
+"""
+
+tree = parser.parse(code, start="start")
+tree = DesugarAssignment().transform(tree)
+
+func = tree.children[0]
+params = func.children[1]
+
+checker = TypeChecker()
+checker.add_parameters(params)
 
