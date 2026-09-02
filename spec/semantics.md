@@ -4,6 +4,7 @@
 
 
 ### Addition
+
 **Syntax:** `A + B`
 
 **Type:** 
@@ -19,8 +20,25 @@
 
 
 
-### Multiplication
-**Syntax:** `A * B`
+### Element-wise Multiplication
+
+**Syntax:** `A.multiply(B)`
+
+**Type:** 
+    Input: Matrix<s1,s2,T> * Matrix<s1,s2,T>  →  Output: Matrix<s1,s2,T>
+
+**Precondition:**
+    Number of columns and rows of A must equal number of cloumns and rows of B.
+
+**Semantics:** 
+    (A.multiply(B))[i][j] = A[i][j] ⊗ B[i][j],  for each i in 1..s1, j in 1..s2
+    
+
+
+
+###  Multiplication
+
+**Syntax:** `A * B` 
 
 **Type:** 
     Input: Matrix<s1,s2,T> * Matrix<s2,s3,T>  →  Output: Matrix<s1,s2,T>
@@ -39,7 +57,82 @@
 
 
 
-### Loop
-**Syntax:** `for i in G.nrows`
+### For Loop (Vektors)
 
+**Syntax:** `for i in G.nrows { ... }`
+
+**Type:** 
+    G: Matrix<s,s,T>
+    Initial state: E₀: Vector<s,T>
+    Body: E: Vector<s,T> → Vector<s,T>   (expression describing how to compute next state from current state)
+    Count: s (= G.nrows)
+    Output: Vector<s,T>
+
+**Precondition:** 
+    None beyond what is already enforced by the type.    
+
+**Semantics:** 
+    v₀ = E₀
+    vₖ = E(vₖ₋₁),   for k = 1..s
+    result = vₛ
+
+
+
+### For Loop (Matrix)
+
+**Syntax:** `for i in G.nrows { ... }`
+
+**Type:** 
+    G: Matrix<s,s,T>
+    Initial state: E₀: Matrix<s,s,T>
+    Body: E: Matrix<s,s,T> → Matrix<s,s,T>  
+    Count: s (= G.nrows)
+    Output: Matrix<s,s,T>
+
+**Precondition:** 
+     None beyond what is already enforced by the type (G and the initial state must share the same dimension s; the loop body must preserve the type Matrix<s,s,T> → Matrix<s,s,T>).    
+
+**Semantics:** 
+    m₀ = E₀
+    mₖ = E(mₖ₋₁),   for k = 1..s
+    result = mₛ
+
+
+
+### Pick Any
+
+**Syntax:** `pickAny(matrix)`
+
+**Type:** 
+    Input: Matrix <s1,s2,T> 
+    Output: Matrix <s1,s2,T> 
+    
+**Precondition:** 
+    None
+        
+**Semantics:** 
+    result[i][j] = matrix[i][j], for exactly one arbitrarily chosen j where matrix[i][j] ≠ 0 (if such j exists)
+    result[i][j] = 0, otherwise
+
+
+
+### Transposition
+
+**Syntax:** `A.T`
+
+**Type:** 
+    Input: Matrix <s1,s2,T> 
+    Output: Matrix <s2,s1,T>
+    
+    
+**Precondition:** 
+    None
+        
+**Semantics:** 
+    (A.T)[i][j] = A[j][i],  for each i in 1..s2, j in 1..s1
+
+
+
+
+     
 
