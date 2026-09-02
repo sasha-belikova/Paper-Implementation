@@ -18,7 +18,10 @@ Can be used as assigning a value to a variable inside a loop (`variable += expre
 ## 4. Built-in Functions
 The language provides native functions for common matrix transformations and operations:
 - `eye(size)`: Takes a dimension and constructs an identity matrix.
-- `pickAny(matrix)`: Retains only the first non-zero element in each row.
+- `pickAny(matrix)`: Retains only non-zero element in each row.
+- `reach(source, G)`: Computes the set of vertices reachable from the source vertices by traversing the graph G.
+- `WCC(matrix)`: Computes the weakly connected components of the graph, returning a matrix where each row identifies the representative (leader) vertex of its component.
+- `SCC(matrix)`: Computes the strongly connected components of the graph, returning a matrix indicating which pairs of vertices are mutually reachable.
 
 
 ## 5. Advanced Transformations

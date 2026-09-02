@@ -45,8 +45,8 @@ def pickAny(matrix):
     return csr_matrix((new_data, new_indices, new_indptr), shape=matrix.shape, dtype=bool)
 
 
-def WCC(V, edges):
-    matrix = create_adjacency_matrix(V, edges, directed = False)
+def WCC(matrix):
+    V = matrix.shape[0]
     label = eye(V, dtype=bool, format='csr')
     for i in range(V):
         previous_label = label.copy
@@ -57,8 +57,8 @@ def WCC(V, edges):
     return label
 
 
-def SCC(V, edges):
-    matrix = create_adjacency_matrix(V, edges, directed = True)
+def SCC(matrix):
+    V = matrix.shape[0]
     rows = []
     cols = []
     data = []

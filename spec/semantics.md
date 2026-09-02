@@ -133,6 +133,88 @@
 
 
 
+### Eye
 
+**Syntax:** 
+    eye(size)
+
+**Type:** 
+    Input: int
+    Output: Matrix<s,s,T>   (where s = size)
+
+**Precondition:** 
+    None
+
+**Semantics:** 
+    eye(size)[i][j] = 1,  if i = j
+    eye(size)[i][j] = 0,  if i ≠ j
+    for each i, j in 1..size
+
+
+
+### Reach
+
+**Syntax:** 
+    reach(source, G)
+
+**Type:** 
+    Input: source: Vector<s,T>, G: Matrix<s,s,T>
+    Output: Vector<s,T>
+
+**Precondition:** 
+    Source and G must share the same dimension s.
+
+**Semantics:** 
+    reach(source, G) = for-loop (Vector version) with:
+        E₀ = source
+        E(v) = v + (v * G)
+
+
+
+### WCC
+
+**Syntax:** 
+    WCC(matrix)
+
+**Type:** 
+    Input: matrix: Matrix<s,s,T>
+    Output: Matrix<s,s,T>
+
+**Precondition:** 
+    Matrix must be square.
+
+**Semantics:** 
+    WCC(matrix) = pickAny(R)
+    where R = for-loop (Matrix version) with:
+        E₀ = eye(s)
+        E(M) = pickAny(M + (matrix * M))
+    (i.e. M₀ = eye(s); Mₖ = pickAny(Mₖ₋₁ + (matrix * Mₖ₋₁)) for k = 1..s; R = Mₛ)
+    Each row i of the result contains exactly one nonzero entry j,
+    identifying j as the representative (leader) of the connected component containing vertex i
+
+
+
+### SCC
+
+**Syntax:** 
+    SCC(matrix)
+
+**Type:** 
+    Input: matrix: Matrix<s,s,T>
+    Output: Matrix<s,s,T>
+
+**Precondition:** 
+    Matrix must be square, s×s.
+
+**Semantics:** 
+    SCC(matrix) = R.multiply(R.T)
+    where R = for-loop (Matrix version) with:
+        E₀ = eye(s)
+        E(M) = M + (M * matrix)
+    (i.e. M₀ = eye(s); Mₖ = Mₖ₋₁ + (Mₖ₋₁ * matrix) for k = 1..s; R = Mₛ)
+
+    R[i][j] = true iff vertex j is reachable from vertex i.
+    (R.multiply(R.T))[i][j] = true iff i and j are mutually reachable,
+    i.e. i and j belong to the same strongly connected component.
      
 
