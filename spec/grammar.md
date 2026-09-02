@@ -4,7 +4,6 @@
 ## 2. Loop Syntax
 Loops over a matrix dimension or an integer range are defined using the `for` keyword:
 - `for i in G.nrows { ... }`
-- `for i in int(0):iterations { ... }`
 
 ## 3. Assignment and Operations
 Variables can be assigned or updated using standard operators. Matrix and vector operations (like multiplication) are built-in.
@@ -12,6 +11,7 @@ Variables can be assigned or updated using standard operators. Matrix and vector
 - **Matrix addition** (addition follows the semiring's "+" operator; for bool this is logical OR): `variable + expression`
 Can be used as assigning a value to a variable inside a loop (`variable += expression` equal to `v = v + E`)
 - **Matrix multiplication**: `A * B`
+- **Transpose**: `matrix.T` (Returns the transposed version of the matrix).
 
 
 
@@ -24,5 +24,3 @@ The language provides native functions for common matrix transformations and ope
 - `SCC(matrix)`: Computes the strongly connected components of the graph, returning a matrix indicating which pairs of vertices are mutually reachable.
 
 
-## 5. Advanced Transformations
-- **Transpose**: `matrix.T` (Returns the transposed version of the matrix).

@@ -49,7 +49,7 @@ def WCC(matrix):
     V = matrix.shape[0]
     label = eye(V, dtype=bool, format='csr')
     for i in range(V):
-        previous_label = label.copy
+        previous_label = label.copy()
         new_label = label + (matrix @ label)
         label = pickAny(new_label)
         if (label != previous_label).nnz == 0:

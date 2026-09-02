@@ -71,27 +71,4 @@ class DesugarAssignment(Transformer):
 
 
 
-parser = Lark(
-    grammar,
-    parser="lalr",
-    start=["start", "expression", "type"]
-)
-
-transformer = DesugarAssignment()
-
-code = """
-func test(A: Matrix<A,B,bool>, n: int)
--> Vector<B,bool> {
-    return A;
-}
-"""
-
-tree = parser.parse(code, start="start")
-tree = DesugarAssignment().transform(tree)
-
-func = tree.children[0]
-params = func.children[1]
-
-checker = TypeChecker()
-checker.add_parameters(params)
 

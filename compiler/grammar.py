@@ -27,9 +27,11 @@ matrix_type: "Matrix" "<" IDENTIFIER "," IDENTIFIER "," IDENTIFIER ">"
 vector_type: "Vector" "<" IDENTIFIER "," IDENTIFIER ">"
 int_type: "int"
 
-func_call_1arg: ("eye" | "pickAny" | "WCC" | "SCC") "(" expression ")"
-func_call_2arg: "reach" "(" expression "," expression ")"
+func_call_1arg: FUNC_NAME_1ARG "(" expression ")"
+func_call_2arg: FUNC_NAME_2ARG "(" expression "," expression ")"
 
+FUNC_NAME_1ARG.2: "eye" | "pickAny" | "WCC" | "SCC"
+FUNC_NAME_2ARG.2: "reach"
 NUMBER: /[0-9]+/
 IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
 
