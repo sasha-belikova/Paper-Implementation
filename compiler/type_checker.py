@@ -1,14 +1,4 @@
-from .data_types import MatrixType, VectorType, IntType
-
-class SymbolTable:
-    def __init__(self):
-        self.symbols = {}
-
-    def define(self, name, type_):
-        self.symbols[name] = type_
-
-    def lookup(self, name):
-        return self.symbols.get(name)
+from .data_types import MatrixType, VectorType, IntType, SymbolTable
 
 
 class TypeChecker:
@@ -87,6 +77,7 @@ class TypeChecker:
             raise TypeError("Matrix is not square")
         return arg_type
 
+
     def check_expression(self, node):
         if node.data == "identifier":
                     name = node.children[0]
@@ -127,6 +118,10 @@ class TypeChecker:
         if func_name == "eye":
             raise NotImplementedError()
         raise TypeError(f"Unknown function: {func_name}")
+
+    def check_reach(self, source, matrix):
+        func_name = str(source.children[0])
+
 
 
     def check_func_call_2arg(self, node):

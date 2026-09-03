@@ -16,3 +16,15 @@ class VectorType:
 @dataclass
 class IntType:
     pass
+
+
+
+class SymbolTable:
+    def __init__(self):
+        self.symbols = {}
+
+    def define(self, name, type_):
+        self.symbols[name] = type_
+
+    def lookup(self, name):
+        return self.symbols.get(name)
