@@ -1,29 +1,68 @@
 from .data_types import MatrixType, VectorType, IntType, SymbolTable
+from lark import Tree
 
 
 class TypeChecker:
     def __init__(self):
         self.symbols = SymbolTable()
+        self.substitutions = {}        
+        self._fresh_counter = 0
 
+    def fresh_var(self):
+        self._fresh_counter += 1
+        return f"$s{self._fresh_counter}"
+
+    def resolve(self, name):
+        while name in self.substitutions:
+            name = self.substitutions[name]
+        return name
+
+    def unify_dim(self, d1, d2):
+        r1 = self.resolve(d1)
+        r2 = self.resolve(d2)
+        if r1 == r2:
+            return r1
+        if r1.startswith('$'):
+            self.substitutions[r1] = r2
+            return r2
+        if r2.startswith('$'):
+            self.substitutions[r2] = r1
+            return r1
+        raise TypeError(f"Cannot unify dimension '{r1}' with '{r2}'")
+
+    def unify_type(self, t1, t2):
+        if isinstance(t1, MatrixType) and isinstance(t2, MatrixType):
+            if t1.semiring != t2.semiring:
+                raise TypeError(f"Semiring mismatch: {t1.semiring} vs {t2.semiring}")
+            rows = self.unify_dim(t1.rows, t2.rows)
+            cols = self.unify_dim(t1.cols, t2.cols)
+            return MatrixType(rows, cols, t1.semiring)
+
+        if isinstance(t1, VectorType) and isinstance(t2, VectorType):
+            if t1.semiring != t2.semiring:
+                raise TypeError(f"Semiring mismatch: {t1.semiring} vs {t2.semiring}")
+            size = self.unify_dim(t1.size, t2.size)
+            return VectorType(size, t1.semiring)
+
+        if isinstance(t1, IntType) and isinstance(t2, IntType):
+            return IntType()
+
+        raise TypeError(f"Cannot unify {t1} with {t2}")
 
     def check_assignment(self, node):
         var_name = str(node.children[0].children[0])
         right_type = self.check_expression(node.children[1])
         old_type = self.symbols.lookup(var_name)
-        if old_type is not None and old_type != right_type:
-            raise TypeError(
-                f"Cannot reassign '{var_name}': "
-                f"was {old_type}, now {right_type}")
+        if old_type is not None:
+            right_type = self.unify_type(old_type, right_type)
         self.symbols.define(var_name, right_type)
         return right_type
 
-    
     def add_parameters(self, params):
         for param in params.children:
             name = param.children[0]
             type_ = param.children[1]
             self.symbols.define(str(name.children[0]), type_)
-
 
     def check_identifier(self, name):
         type_ = self.symbols.lookup(name)
@@ -31,12 +70,8 @@ class TypeChecker:
             raise TypeError(f"Undefined variable: {name}")
         return type_
 
-
     def check_addition(self, left_type, right_type):
-        if left_type != right_type:
-            raise TypeError(f"Cannot add {left_type} and {right_type}")
-        return left_type
-
+        return self.unify_type(left_type, right_type)
 
     def check_multiplication(self, left_type, right_type):
         if not isinstance(left_type, MatrixType):
@@ -51,12 +86,10 @@ class TypeChecker:
             raise TypeError("Matrices must use the same semiring")
         return MatrixType(left_type.rows, right_type.cols, left_type.semiring)
 
-
     def check_transpose(self, type_):
         if not isinstance(type_, MatrixType):
             raise TypeError("Only matrices can be transposed")
         return MatrixType(type_.cols, type_.rows, type_.semiring)
-
 
     def check_elementwise_multiply(self, left_type, right_type):
         if left_type != right_type:
@@ -69,13 +102,28 @@ class TypeChecker:
             raise TypeError("pickAny expects a Matrix argument")
         return arg_type
 
-
     def check_square_matrix_func(self, arg_type):
         if not isinstance(arg_type, MatrixType):
             raise TypeError("Not a matrix")
-        if arg_type.rows != arg_type.cols:
-            raise TypeError("Matrix is not square")
-        return arg_type
+        u = self.unify_dim(arg_type.rows, arg_type.cols)
+        return MatrixType(u, u, arg_type.semiring)
+
+    def check_reach(self, source_type, g_type):
+        if not isinstance(source_type, VectorType):
+            raise TypeError("reach: first argument must be a Vector")
+        g_type = self.check_square_matrix_func(g_type)
+        size = self.unify_dim(source_type.size, g_type.rows)
+        if source_type.semiring != g_type.semiring:
+            raise TypeError(
+            f"reach: semiring mismatch, "
+            f"source is {source_type.semiring}, matrix is {g_type.semiring}")
+        return VectorType(size, source_type.semiring)
+
+    def check_eye(self, arg_type):
+        if not isinstance(arg_type, IntType):
+            raise TypeError("Argument must be a number")
+        new_type = self.fresh_var()
+        return MatrixType(new_type, new_type, 'bool')
 
 
     def check_expression(self, node):
@@ -116,26 +164,55 @@ class TypeChecker:
         if func_name in ("WCC", "SCC"):
             return self.check_square_matrix_func(arg_type)
         if func_name == "eye":
-            raise NotImplementedError()
+            return self.check_eye(arg_type)
         raise TypeError(f"Unknown function: {func_name}")
-
-    def check_reach(self, source, matrix):
-        func_name = str(source.children[0])
-
-
 
     def check_func_call_2arg(self, node):
         func_name = str(node.children[0])
         first_type = self.check_expression(node.children[1])
         second_type = self.check_expression(node.children[2])
         if func_name == "reach":
-            raise NotImplementedError()
+            return self.check_reach(first_type, second_type)
         raise TypeError(f"Unknown function: {func_name}")
-
 
     def check_statement(self, node):
         if node.data == "assignment":
             return self.check_assignment(node)
         if node.data == "for_stmt":
-            raise NotImplementedError()
+            return self.check_for_stmt(node)
         raise TypeError(f"Unknown statement: {node.data}")
+
+    def check_for_stmt(self, node):
+        matrix_name = node.children[1].children[0]
+        type_ = self.check_identifier(matrix_name)
+        if not isinstance(type_, MatrixType):
+            raise TypeError(f"Not a Matrix")
+        name = node.children[0].children[0]
+        self.symbols.define(name, IntType())
+        for stmt_wrapper in node.children[2:]:
+            stmt = stmt_wrapper.children[0]   
+            self.check_statement(stmt)
+        return None
+
+    def check_func_decl(self, node):
+        func_name = node.children[0]
+        params = node.children[1]
+        declared_type = node.children[2]
+        body = node.children[3:]
+        self.add_parameters(params)
+        result = None
+        for elem in body:
+            if isinstance(elem, Tree) and elem.data == "statement":
+                elem = elem.children[0]
+            if isinstance(elem, Tree) and elem.data == "return_stmt":
+                result = self.check_return_stmt(elem, declared_type)
+            else:
+                self.check_statement(elem)
+        return result
+
+
+    def check_return_stmt(self, node, declared_type):
+        return_expr = node.children[0]
+        actual_type = self.check_expression(return_expr)
+        return self.unify_type(declared_type, actual_type)
+
