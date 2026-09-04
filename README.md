@@ -5,8 +5,8 @@ This project is an independent implementation based on the paper **[Algorithm Su
 The goal of the project is to study the **GraphAlg** programming model for graph algorithms and reproduce its main ideas step by step in Python. The project currently focuses on implementing graph operations using **NumPy/SciPy** and on building the foundation for a simplified GraphAlg-like language.
 
 
-
-`Paper-Implementation/
+```text
+Paper-Implementation/
 ├── compiler/
 │   ├── __init__.py
 │   ├── data_types.py
@@ -29,7 +29,8 @@ The goal of the project is to study the **GraphAlg** programming model for graph
 ├── __init__.py
 ├── python_prototypes.py
 ├── README.md
-└── requirements.txt `
+└── requirements.txt 
+```
 
 ## Current Progress
 
