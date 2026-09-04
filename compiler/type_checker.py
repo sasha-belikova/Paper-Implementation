@@ -78,13 +78,12 @@ class TypeChecker:
             raise TypeError("Left operand must be a matrix")
         if not isinstance(right_type, MatrixType):
             raise TypeError("Right operand must be a matrix")
-        if left_type.cols != right_type.rows:
-            raise TypeError(
-                f"Cannot multiply {left_type} and {right_type}: "
-                f"{left_type.cols} != {right_type.rows}")
+        self.unify_dim(left_type.cols, right_type.rows)
         if left_type.semiring != right_type.semiring:
             raise TypeError("Matrices must use the same semiring")
-        return MatrixType(left_type.rows, right_type.cols, left_type.semiring)
+        rows = self.resolve(left_type.rows)
+        cols = self.resolve(right_type.cols)
+        return MatrixType(rows, cols, left_type.semiring)
 
     def check_transpose(self, type_):
         if not isinstance(type_, MatrixType):
@@ -92,10 +91,7 @@ class TypeChecker:
         return MatrixType(type_.cols, type_.rows, type_.semiring)
 
     def check_elementwise_multiply(self, left_type, right_type):
-        if left_type != right_type:
-            raise TypeError(
-                f"Cannot elementwise multiply {left_type} and {right_type}")
-        return left_type
+        return self.unify_type(left_type, right_type)
 
     def check_pick_any(self, arg_type):
         if not isinstance(arg_type, MatrixType):

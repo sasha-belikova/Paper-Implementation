@@ -1,7 +1,7 @@
-from lark import Lark, Transformer, Tree
+from lark import Transformer, Tree
 from .data_types import MatrixType, VectorType, IntType
 from .grammar import grammar
-from .type_checker import TypeChecker
+
 
 class DesugarAssignment(Transformer):
     def addition_assignment(self, items):
