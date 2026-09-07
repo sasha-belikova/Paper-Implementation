@@ -74,6 +74,3 @@ def SCC(matrix):
     R = csr_matrix((data, (rows, cols)), shape=(V, V), dtype=bool)
     scc_matrix = R.multiply(R.transpose())
     return scc_matrix
-
-
-

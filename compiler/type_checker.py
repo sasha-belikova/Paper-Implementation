@@ -74,16 +74,21 @@ class TypeChecker:
         return self.unify_type(left_type, right_type)
 
     def check_multiplication(self, left_type, right_type):
-        if not isinstance(left_type, MatrixType):
-            raise TypeError("Left operand must be a matrix")
         if not isinstance(right_type, MatrixType):
             raise TypeError("Right operand must be a matrix")
-        self.unify_dim(left_type.cols, right_type.rows)
         if left_type.semiring != right_type.semiring:
             raise TypeError("Matrices must use the same semiring")
-        rows = self.resolve(left_type.rows)
-        cols = self.resolve(right_type.cols)
-        return MatrixType(rows, cols, left_type.semiring)
+        if isinstance(left_type, MatrixType):
+            self.unify_dim(left_type.cols, right_type.rows)
+            rows = self.resolve(left_type.rows)
+            cols = self.resolve(right_type.cols)
+            return MatrixType(rows, cols, left_type.semiring)
+        elif isinstance(left_type, VectorType):
+            self.unify_dim(left_type.size, right_type.rows)
+            size = self.resolve(right_type.cols)
+            return VectorType(size, left_type.semiring)
+        else:
+            raise TypeError("Left operand must be a matrix or vector")
 
     def check_transpose(self, type_):
         if not isinstance(type_, MatrixType):

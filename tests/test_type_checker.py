@@ -367,14 +367,7 @@ class TestMatrixOperations:
         with pytest.raises(TypeError, match="semiring"):
             checker.check_multiplication(a, b)
 
-    def not_not_matrix(self):
-        checker = TypeChecker()
-        with pytest.raises(TypeError, match="Left operand must be a matrix"):
-            checker.check_multiplication(
-                VectorType("A", "bool"),
-                MatrixType("A", "B", "bool"))
-
-    def not_matrix(self):
+    def test_not_matrix(self):
         checker = TypeChecker()
         with pytest.raises(TypeError, match="Right operand must be a matrix"):
             checker.check_multiplication(
