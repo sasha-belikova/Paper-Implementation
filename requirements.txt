@@ -2,3 +2,4 @@ numpy
 scipy
 lark
 pytest
+hypothesis
