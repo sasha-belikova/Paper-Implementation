@@ -1,0 +1,3 @@
+func reach_example(source: Vector<A,bool>, G: Matrix<A,A,bool>) 
+    -> Vector<A,bool> 
+    {return reach(source, G);}

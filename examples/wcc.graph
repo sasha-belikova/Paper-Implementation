@@ -1,0 +1,4 @@
+func wcc_example(G: Matrix<A,A,bool>) 
+    -> Matrix<A,A,bool> 
+    {W = WCC(G);
+    return W;}

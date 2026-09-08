@@ -1,0 +1,3 @@
+func scc_example(G: Matrix<A,A,bool>) 
+    -> Matrix<A,A,bool> 
+    {return SCC(G);}
