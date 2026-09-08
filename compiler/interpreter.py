@@ -90,7 +90,13 @@ class Interpreter:
     def eval_for_stmt(self, node):
         matrix_name = node.children[1].children[0]
         matrix = self.eval_identifier(matrix_name)
-        iterations = matrix.shape[0]
+        dimension = str(node.children[2])
+        if dimension == "nrows":
+            iterations = matrix.shape[0]
+        elif dimension == "ncols":
+            iterations = matrix.shape[1]
+        else:
+            raise ValueError(f"Unknown matrix dimension: {dimension}")
         name = node.children[0].children[0]
         for i in range(iterations):
             self.symbols.define(name, i)
@@ -109,7 +115,6 @@ class Interpreter:
         return self.eval_expression(node.children[0])
 
     def run_func_decl(self, node, arguments):
-        func_name = str(node.children[0])
         params = node.children[1]
         body = node.children[3:]
         self.add_parameters(params, arguments)

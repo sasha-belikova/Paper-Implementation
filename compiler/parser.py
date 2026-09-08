@@ -4,10 +4,6 @@ from .grammar import grammar
 
 
 class DesugarAssignment(Transformer):
-    def addition_assignment(self, items):
-        var, expr = items
-        addition = Tree('addition', [var, expr])
-        return Tree('assignment', [var, addition])
     
     def IDENTIFIER(self, token):
         return Tree("identifier", [str(token)])
@@ -24,6 +20,11 @@ class DesugarAssignment(Transformer):
             result = Tree("addition", [result, item])
         return result
 
+    def addition_assignment(self, items):
+            var, expr = items
+            addition = Tree('addition', [var, expr])
+            return Tree('assignment', [var, addition])
+
     def multiplication(self, items):
         if len(items) == 1:
             return items[0]
@@ -32,6 +33,9 @@ class DesugarAssignment(Transformer):
         for item in items[1:]:
             result = Tree("multiplication", [result, item])
         return result
+
+    def dimension(self, items):
+        return str(items[0])
 
     def atom(self, items):
         return items[0]

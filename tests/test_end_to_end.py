@@ -211,6 +211,7 @@ class TestEndToEnd:
             return B;}"""
         with pytest.raises(TypeError, match="Undefined variable"):
             run_program(code, {"A": csr_matrix((2, 2), dtype=bool),})    
+  
 
 
 

@@ -4,7 +4,7 @@ start: func_decl
 func_decl: "func" IDENTIFIER "(" params ")" "->" type "{" statement* return_stmt "}"
 
 statement: (assignment | addition_assignment | for_stmt) ";"?
-for_stmt: "for" IDENTIFIER "in" IDENTIFIER "." ("nrows"| "ncols") "{" statement* "}"
+for_stmt: "for" IDENTIFIER "in" IDENTIFIER "." DIMENSION "{" statement* "}"
 return_stmt: "return" expression ";"
 
 expression: addition
@@ -30,6 +30,7 @@ int_type: "int"
 func_call_1arg: FUNC_NAME_1ARG "(" expression ")"
 func_call_2arg: FUNC_NAME_2ARG "(" expression "," expression ")"
 
+DIMENSION: "nrows" | "ncols"
 FUNC_NAME_1ARG.2: "eye" | "pickAny" | "WCC" | "SCC"
 FUNC_NAME_2ARG.2: "reach"
 NUMBER: /[0-9]+/

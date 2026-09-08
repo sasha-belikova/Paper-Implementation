@@ -187,16 +187,15 @@ class TypeChecker:
         matrix_name = node.children[1].children[0]
         type_ = self.check_identifier(matrix_name)
         if not isinstance(type_, MatrixType):
-            raise TypeError(f"Not a Matrix")
+            raise TypeError("Not a Matrix")
         name = node.children[0].children[0]
         self.symbols.define(name, IntType())
-        for stmt_wrapper in node.children[2:]:
-            stmt = stmt_wrapper.children[0]   
+        for stmt_wrapper in node.children[3:]:
+            stmt = stmt_wrapper.children[0]
             self.check_statement(stmt)
         return None
 
     def check_func_decl(self, node):
-        func_name = node.children[0]
         params = node.children[1]
         declared_type = node.children[2]
         body = node.children[3:]
