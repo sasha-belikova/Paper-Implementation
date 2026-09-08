@@ -188,5 +188,30 @@ class TestEndToEnd:
         np.testing.assert_array_equal(result.toarray(), expected.toarray())
 
 
+    def test_invalid_matrix_multiplication_end_to_end(self):
+        code = """func test(A: Matrix<A,B,bool>, B: Matrix<C,D,bool>) -> Matrix<A,D,bool> 
+        {return A * B;}"""
+        with pytest.raises(TypeError):
+            run_program(code,  
+                {"A": csr_matrix((2, 3), dtype=bool),
+                "B": csr_matrix((4, 5), dtype=bool),})
+
+
+    def test_semiring_mismatch_end_to_end(self):
+        code = """func test(A: Matrix<A,A,bool>, B: Matrix<A,A,int>) -> Matrix<A,A,bool> 
+            {return A * B;}"""
+        with pytest.raises(TypeError, match="same semiring"):
+            run_program(code, 
+                {"A": csr_matrix((2, 2), dtype=bool),
+                "B": csr_matrix((2, 2), dtype=np.int64),})
+
+
+    def test_undefined_variable_end_to_end(self):
+        code = """func test(A: Matrix<A,A,bool>) -> Matrix<A,A,bool> {
+            return B;}"""
+        with pytest.raises(TypeError, match="Undefined variable"):
+            run_program(code, {"A": csr_matrix((2, 2), dtype=bool),})    
+
+
 
 
