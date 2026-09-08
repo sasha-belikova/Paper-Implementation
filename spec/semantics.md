@@ -185,12 +185,18 @@
 
 **Semantics:** 
     WCC(matrix) = pickAny(R)
-    where R = for-loop (Matrix version) with:
-        E₀ = eye(s)
-        E(M) = pickAny(M + (matrix * M))
-    (i.e. M₀ = eye(s); Mₖ = pickAny(Mₖ₋₁ + (matrix * Mₖ₋₁)) for k = 1..s; R = Mₛ)
+    where A = matrix ∨ matrix.T
+          R = for-loop (Matrix version) with:
+              E₀ = eye(s)
+              E(A) = pickAny(E + (A * E))
+    (i.e. E₀ = eye(s);
+          Eₖ = pickAny(Eₖ₋₁ + (A * Eₖ₋₁)) for k = 1..s;
+          R = Eₛ)
+    where A = matrix ∨ matrix.T
+    
     Each row i of the result contains exactly one nonzero entry j,
-    identifying j as the representative (leader) of the connected component containing vertex i
+    identifying j as the representative (leader) of the connected
+    component containing vertex i.
 
 
 

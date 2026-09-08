@@ -82,6 +82,26 @@ def oracle_reach(source, matrix):
         reached = new_reached
     return reached
 
+def oracle_wcc(matrix):
+    graph = matrix.toarray().astype(bool)
+    undirected = graph | graph.T
+    n = undirected.shape[0]
+    component = [-1] * n
+    current_id = 0
+    for start in range(n):
+        if component[start] != -1:
+            continue
+        stack = [start]
+        component[start] = current_id
+        while stack:
+            current = stack.pop()
+            neighbours = np.flatnonzero(undirected[current])
+            for neighbour in neighbours:
+                if component[neighbour] == -1:
+                    component[neighbour] = current_id
+                    stack.append(neighbour)
+        current_id += 1
+    return component
 
 
 def oracle_scc(matrix):
@@ -235,6 +255,29 @@ class TestInterpreter:
         assert isinstance(result, csr_matrix)
         assert result.dtype == bool
         np.testing.assert_array_equal(result.toarray(), expected)
+
+
+    @given(square_bool_csr_matrices())
+    def test_wcc(self, matrix):
+        self.interpreter.symbols.define("G", matrix)
+        node = Tree("func_call_1arg", [Token("FUNC_NAME_1ARG", "WCC"),
+                Tree("identifier", [Token("IDENTIFIER", "G")])
+                ])
+        result = self.interpreter.eval_func_call_1arg(node)
+        assert isinstance(result, csr_matrix)
+        assert result.dtype == bool
+
+        result_array = result.toarray()
+        n = matrix.shape[0]
+
+        row_sums = result_array.sum(axis=1)
+        np.testing.assert_array_equal(row_sums, np.ones(n, dtype=int))
+        leaders = np.argmax(result_array, axis=1)
+        component = oracle_wcc(matrix)
+        for i in range(n):
+            for j in range(n):
+                if component[i] == component[j]:
+                    assert leaders[i] == leaders[j]   
 
 
     @given(square_bool_csr_matrices())

@@ -46,6 +46,9 @@ def pickAny(matrix):
 
 
 def WCC(matrix):
+    matrix = matrix.tocsr()
+    matrix = matrix + matrix.T
+    matrix.data[:] = True
     V = matrix.shape[0]
     label = eye(V, dtype=bool, format='csr')
     for i in range(V):
