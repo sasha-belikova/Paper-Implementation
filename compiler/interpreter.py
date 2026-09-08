@@ -100,7 +100,7 @@ class Interpreter:
         name = node.children[0].children[0]
         for i in range(iterations):
             self.symbols.define(name, i)
-            for stmt_wrapper in node.children[2:]:
+            for stmt_wrapper in node.children[2:]:   # <-- баг
                 stmt = stmt_wrapper.children[0]
                 self.eval_statement(stmt)
 

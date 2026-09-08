@@ -1,0 +1,3 @@
+func eye_example(n: int) 
+    -> Matrix<A,A,bool>
+    {return eye(n);}

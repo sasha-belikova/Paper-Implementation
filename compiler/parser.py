@@ -34,8 +34,6 @@ class DesugarAssignment(Transformer):
             result = Tree("multiplication", [result, item])
         return result
 
-    def dimension(self, items):
-        return str(items[0])
 
     def atom(self, items):
         return items[0]
