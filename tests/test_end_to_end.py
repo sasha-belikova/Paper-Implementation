@@ -8,18 +8,11 @@ from compiler.parser import DesugarAssignment
 from compiler.type_checker import TypeChecker
 from compiler.interpreter import Interpreter
 from tests.test_interpreter import oracle_wcc, square_bool_csr_matrices
+from compiler.runner import run_program
 
 
 parser = Lark(grammar, parser="lalr")
 
-def run_program(code, arguments):
-    tree = parser.parse(code)
-    tree = DesugarAssignment().transform(tree)
-    func = tree.children[0]
-    checker = TypeChecker()
-    checker.check_func_decl(func)
-    interpreter = Interpreter()
-    return interpreter.run_func_decl(func, arguments)
 
 def oracle_scc(matrix):
     graph = matrix.toarray().astype(bool)
