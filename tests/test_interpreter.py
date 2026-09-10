@@ -60,7 +60,7 @@ def compatible_matrices(draw):
     return left, right
 
 
-def oracle_pick_any(matrix):
+def brute_force_pick_any(matrix):
     array = matrix.toarray()
     result = np.zeros_like(array, dtype=bool)
     for i in range(array.shape[0]):
@@ -70,7 +70,7 @@ def oracle_pick_any(matrix):
     return result
 
 
-def oracle_reach(source, matrix):
+def brute_force_reach(source, matrix):
     source = np.asarray(source, dtype=bool)
     matrix = matrix.toarray().astype(bool)
     reached = source.copy()
@@ -82,7 +82,7 @@ def oracle_reach(source, matrix):
         reached = new_reached
     return reached
 
-def oracle_wcc(matrix):
+def brute_force_wcc(matrix):
     graph = matrix.toarray().astype(bool)
     undirected = graph | graph.T
     n = undirected.shape[0]
@@ -104,7 +104,7 @@ def oracle_wcc(matrix):
     return component
 
 
-def oracle_scc(matrix):
+def brute_force_scc(matrix):
     graph = matrix.toarray().astype(bool)
     n = graph.shape[0]
     reachability = np.zeros((n, n), dtype=bool)
@@ -228,7 +228,7 @@ class TestInterpreter:
             Tree("identifier", [Token("IDENTIFIER", "A")])
             ])
         result = self.interpreter.eval_func_call_1arg(node)
-        expected = oracle_pick_any(matrix)
+        expected = brute_force_pick_any(matrix)
         assert isinstance(result, csr_matrix)
         assert result.dtype == bool
         np.testing.assert_array_equal(result.toarray(), expected)
@@ -250,7 +250,7 @@ class TestInterpreter:
                 Tree("identifier", [Token("IDENTIFIER", "G")])
                 ])
         result = self.interpreter.eval_func_call_2arg(node)
-        expected = oracle_reach(source, matrix)
+        expected= brute_force_reach(source, matrix)
 
         assert isinstance(result, csr_matrix)
         assert result.dtype == bool
@@ -273,7 +273,7 @@ class TestInterpreter:
         row_sums = result_array.sum(axis=1)
         np.testing.assert_array_equal(row_sums, np.ones(n, dtype=int))
         leaders = np.argmax(result_array, axis=1)
-        component = oracle_wcc(matrix)
+        component = brute_force_wcc(matrix)
         for i in range(n):
             for j in range(n):
                 if component[i] == component[j]:
@@ -287,7 +287,7 @@ class TestInterpreter:
                 Tree("identifier", [Token("IDENTIFIER", "G")])
                 ])
         result = self.interpreter.eval_func_call_1arg(node)
-        expected = oracle_scc(matrix)
+        expected = brute_force_scc(matrix)
 
         assert isinstance(result, csr_matrix)
         assert result.dtype == bool

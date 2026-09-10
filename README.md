@@ -1,8 +1,9 @@
 # Paper Implementation — GraphAlg
 
-This project is an independent implementation based on the paper **[Algorithm Support in a Graph Database, Done Right](https://arxiv.org/abs/2601.06705)**.
+This project is an independent implementation of the paper **[Algorithm Support in a Graph Database, Done Right](https://arxiv.org/abs/2601.06705)**.
 
-The goal of the project is to study the **GraphAlg** programming model for graph algorithms and reproduce its main ideas step by step in Python. The project implements a small DSL for graph operations on sparse matrices, backed by **NumPy/SciPy**, including a grammar, a type checker with symbolic-dimension unification, and a tree-walking interpreter.
+The project reproduces a mini version of the GraphAlg language in Python. GraphAlg expresses graph algorithms in terms of linear algebra: graphs are represented as sparse adjacency matrices, and algorithms like reachability or connected components are computed through iterated matrix operations (multiplication, addition, element-wise ops) rather than explicit traversal with queues or stacks. This project implements a small DSL (Domain-Specific Language) built on that model — a grammar, a type checker, and a tree-walking interpreter.
+
 
 ```text
 Paper-Implementation/
@@ -44,24 +45,13 @@ Paper-Implementation/
 
 ## Current Progress
 
-* Implemented core graph operations (`reach`, `pickAny`, `WCC`, `SCC`, `eye`) in Python/SciPy, validated with property-based tests (`hypothesis`) against brute-force oracles.
+* Implemented core graph operations (`reach`, `pickAny`, `WCC`, `SCC`, `eye`) in Python/SciPy, validated with property-based tests (`hypothesis` library) against brute-force.
 * Defined a grammar for a simplified GraphAlg-like DSL (Lark, LALR), covering function declarations, arithmetic/matrix expressions, `for` loops over matrix dimensions, and built-in graph functions.
-* Implemented a full **type checker** with unification over symbolic dimension variables (`Matrix<s1,s2,T>`, `Vector<s,T>`), catching dimension and semiring mismatches at "compile time".
-* Implemented a tree-walking **interpreter** that evaluates DSL programs directly, reusing the `python_prototypes.py` implementations under the hood (matrices/vectors are represented as `scipy.sparse.csr_matrix`).
-* Added a CLI (`main.py`) to run `.graph` program files against JSON-supplied arguments.
-* Added an end-to-end test suite (`tests/test_end_to_end.py`) that parses real DSL source, type-checks it, and runs it through the interpreter, covering all five built-in functions plus assignment/`for`-loop combinations and expected type errors.
+* Implemented a **type checker** with unification over symbolic dimension variables, catching dimension and semiring mismatches at compile time.
+* Implemented a tree-walking **interpreter** that executes DSL programs by evaluating the AST (Abstract Syntax Tree) directly, dispatching each built-in graph function to its reference implementation in `python_prototypes.py`. 
+* Added a CLI in `main.py` to run `.graph` program files against JSON-supplied arguments.
+* Added an end-to-end test suite (`tests/test_end_to_end.py`) that parses real DSL source, type-checks it, and runs it through the interpreter, covering all built-in functions, plus-assignment (`+=`) and `for`-loop combinations and expected type errors.
 
-## Project Structure
-
-The project was developed incrementally:
-
-1. Study the GraphAlg model and its representation of graph algorithms.
-2. Implement core operations in Python/NumPy/SciPy.
-3. Implement and test graph algorithms (`reach`, `pickAny`, `WCC`, `SCC`).
-4. Define a GraphAlg-like DSL grammar.
-5. Develop a parser and AST (Lark + a desugaring transformer).
-6. Build a type checker and a tree-walking interpreter for the DSL.
-7. Validate the full pipeline (parser → type checker → interpreter) with an end-to-end test suite, and expose it via a CLI runner.
 
 ## Usage
 

@@ -7,14 +7,14 @@ from compiler.grammar import grammar
 from compiler.parser import DesugarAssignment
 from compiler.type_checker import TypeChecker
 from compiler.interpreter import Interpreter
-from tests.test_interpreter import oracle_wcc, square_bool_csr_matrices
+from tests.test_interpreter import brute_force_wcc, square_bool_csr_matrices
 from compiler.runner import run_program
 
 
 parser = Lark(grammar, parser="lalr")
 
 
-def oracle_scc(matrix):
+def brute_force_scc(matrix):
     graph = matrix.toarray().astype(bool)
     n = graph.shape[0]
     reachable = np.zeros((n, n), dtype=bool)
@@ -32,7 +32,7 @@ def oracle_scc(matrix):
             reachable[i, j] = True
     return csr_matrix(reachable & reachable.T, dtype=bool)
 
-def oracle_pick_any(matrix):
+def brute_force_pick_any(matrix):
     matrix = matrix.tocsr()
     rows = []
     cols = []
@@ -48,7 +48,7 @@ def oracle_pick_any(matrix):
     return csr_matrix((data, (rows, cols)), shape = matrix.shape, dtype = bool)
 
 
-def oracle_reach(source, matrix):
+def brute_force_reach(source, matrix):
     graph = matrix.toarray().astype(bool)
     reached = source.toarray().astype(bool)
     n = graph.shape[0]
@@ -117,7 +117,7 @@ class TestEndToEnd:
         code = """func test(A: Matrix<A,A,bool>) -> Matrix<A,A,bool> 
             {return pickAny(A);}"""
         result = run_program(code, {"A": matrix})
-        expected = oracle_pick_any(matrix)
+        expected = brute_force_pick_any(matrix)
         matrix = matrix.tocsr()
         np.testing.assert_array_equal(result.toarray(), expected.toarray())
 
@@ -136,7 +136,7 @@ class TestEndToEnd:
         row_sums = result_array.sum(axis=1)
         np.testing.assert_array_equal(row_sums, np.ones(n, dtype=int))
 
-        component = oracle_wcc(matrix)
+        component = brute_force_wcc(matrix)
         leaders = np.argmax(result_array, axis=1)
 
         for i in range(n):
@@ -151,7 +151,7 @@ class TestEndToEnd:
             {return SCC(A);}"""
 
         result = run_program(code, {"A": matrix})
-        expected = oracle_scc(matrix)
+        expected = brute_force_scc(matrix)
         np.testing.assert_array_equal(result.toarray(), expected.toarray())
 
 
@@ -163,7 +163,7 @@ class TestEndToEnd:
         source = csr_matrix(([True], ([0], [0])), shape=(1, n), dtype=bool)
 
         result = run_program(code, {"source": source, "G": matrix,})
-        expected = oracle_reach(source, matrix)
+        expected = brute_force_reach(source, matrix)
         np.testing.assert_array_equal(result.toarray(), expected.toarray())
 
 
@@ -177,7 +177,7 @@ class TestEndToEnd:
             return V;}"""
         
         result = run_program(code, {"A": matrix})
-        expected = oracle_pick_any(matrix)
+        expected = brute_force_pick_any(matrix)
         np.testing.assert_array_equal(result.toarray(), expected.toarray())
 
 
